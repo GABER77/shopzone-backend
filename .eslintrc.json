@@ -2,6 +2,7 @@
   "extends": ["airbnb", "prettier", "plugin:node/recommended"],
   "plugins": ["prettier"],
   "rules": {
+    "import/first": "off",
     "node/no-unsupported-features/es-syntax": [
       "error",
       {

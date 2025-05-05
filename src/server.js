@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import app from './app.js';
-
-dotenv.config({ path: '../config.env' });
 
 // Errors in sync code
 process.on('uncaughtException', (err) => {
@@ -11,6 +8,27 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const port = process.env.PORT || 4000;
+dotenv.config({ path: './config.env' });
+import app from './app.js';
 
-app.listen(port, () => console.log(`Server started on port: ${port}`));
+const port = process.env.PORT || 8000;
+const server = app.listen(port, () => {
+  console.log(`App running on port ${port}`);
+});
+
+// Errors like 'failed to connect to DB'
+process.on('unhandledRejection', (err) => {
+  console.log('❌ Unhandled Rejection, Shutting down...');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// Responding to SIGTERM signal
+process.on('SIGTERM', () => {
+  console.log('✌ SIGTERM RECEIVED, Shutting down gracefully ');
+  server.close(() => {
+    console.log('💥 Process Terminated');
+  });
+});
