@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import connectDB from './config/startServer.js';
 
-// Errors in sync code
+// Catch errors that are not caught anywhere else
 process.on('uncaughtException', (err) => {
   console.log('❌ Uncaught Exception, Shutting down...');
   console.log(err.name, err.message);
@@ -11,12 +11,7 @@ process.on('uncaughtException', (err) => {
 dotenv.config({ path: './config.env' });
 import app from './app.js';
 
-const DB = process.env.DATABASE.replace(
-  '<PASSWORD>',
-  process.env.DATABASE_PASSWORD,
-);
-
-mongoose.connect(DB).then(() => console.log('✅ DB Connected Successfully'));
+await connectDB();
 
 const port = process.env.PORT || 8000;
 const server = app.listen(port, () =>
