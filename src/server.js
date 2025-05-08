@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
-import connectDB from './config/startServer.js';
+import connectDB from './config/mongodb.js';
+import connectCloudinary from './config/cloudinary.js';
 
-// Catch errors that are not caught anywhere else
+// synchronous errors
 process.on('uncaughtException', (err) => {
   console.log('❌ Uncaught Exception, Shutting down...');
   console.log(err.name, err.message);
@@ -12,13 +13,14 @@ dotenv.config({ path: './config.env' });
 import app from './app.js';
 
 await connectDB();
+await connectCloudinary();
 
 const port = process.env.PORT || 8000;
 const server = app.listen(port, () =>
   console.log(`App running on port ${port}`),
 );
 
-// Errors like 'failed to connect to DB'
+// asynchronous errors caused by a rejected Promise
 process.on('unhandledRejection', (err) => {
   console.log('❌ Unhandled Rejection, Shutting down...');
   console.log(err.name, err.message);
