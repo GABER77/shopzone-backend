@@ -1,0 +1,63 @@
+import mongoose from 'mongoose';
+import validator from 'validator';
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'A user must have a name'],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, 'A user must have an email'],
+      validate: [validator.isEmail, 'Please enter a valid email'],
+      unique: true,
+      lowercase: true,
+    },
+    photo: {
+      type: String,
+      default: 'defaultUser.jpg',
+    },
+    password: {
+      type: String,
+      required: [true, 'A user must have a password'],
+      minlength: [8, 'Password must be at least 8 characters long'],
+      select: false, // Don't return password in queries
+    },
+    passwordConfirm: {
+      type: String,
+      required: [true, 'Please confirm your password'],
+      validate: {
+        // This only works on `create` and `save`, not on update
+        validator: function (val) {
+          return val === this.password;
+        },
+        message: 'Passwords do not match',
+      },
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
+    cart: {
+      type: Object,
+      default: {},
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
+  },
+  { minimize: false }, // This tells Mongoose: keep empty objects
+);
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+export default User;
