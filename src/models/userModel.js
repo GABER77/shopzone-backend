@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema(
   {
@@ -48,6 +49,7 @@ const userSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
+      select: false,
     },
     active: {
       type: Boolean,
@@ -57,6 +59,13 @@ const userSchema = new mongoose.Schema(
   },
   { minimize: false }, // This tells Mongoose: keep empty objects
 );
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+  next();
+});
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
