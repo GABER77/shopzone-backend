@@ -6,7 +6,6 @@
     "sourceType": "module"
   },
   "rules": {
-    "import/first": "off",
     "node/no-unsupported-features/es-syntax": [
       "error",
       {

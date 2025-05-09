@@ -1,4 +1,5 @@
-import dotenv from 'dotenv';
+import './config/loadEnv.js';
+import app from './app.js';
 import connectDB from './config/mongodb.js';
 import connectCloudinary from './config/cloudinary.js';
 
@@ -8,9 +9,6 @@ process.on('uncaughtException', (err) => {
   console.log(err.name, err.message);
   process.exit(1);
 });
-
-dotenv.config({ path: './config.env' });
-import app from './app.js';
 
 await connectDB();
 await connectCloudinary();
