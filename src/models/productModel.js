@@ -19,7 +19,12 @@ const productSchema = mongoose.Schema({
   },
   images: {
     type: [String],
-    required: [true, 'A product must have an image'],
+    validate: {
+      validator: function (value) {
+        return value.length > 0;
+      },
+      message: 'A product must have at least one image.',
+    },
   },
   category: {
     type: String,
@@ -38,7 +43,12 @@ const productSchema = mongoose.Schema({
   },
   size: {
     type: [Number],
-    required: [true, 'A product must have a size'],
+    validate: {
+      validator: function (value) {
+        return value.length > 0;
+      },
+      message: 'A product must have at least one size.',
+    },
   },
   onSale: {
     type: Boolean,
@@ -48,7 +58,6 @@ const productSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
     immutable: true,
-    select: false,
   },
 });
 

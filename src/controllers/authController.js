@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import catchAsync from '../utils/catchAsync.js';
-import User from '../models/userModel.js';
 import CustomError from '../utils/customError.js';
+import User from '../models/userModel.js';
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -59,4 +59,6 @@ const login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-export { signUp, login };
+const authController = { signUp, login };
+
+export default authController;
