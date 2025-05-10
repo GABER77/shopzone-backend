@@ -60,12 +60,21 @@ const userSchema = new mongoose.Schema(
   { minimize: false }, // This tells Mongoose: keep empty objects
 );
 
+// Password hashing
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
 });
+
+// Instance method: available in all document in a certain collection.
+userSchema.methods.checkPassword = async function (
+  givenPassword,
+  storedPassword,
+) {
+  return await bcrypt.compare(givenPassword, storedPassword);
+};
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
