@@ -44,6 +44,19 @@ const signUp = catchAsync(async (req, res, next) => {
   createSendToken(newUser, 201, res);
 });
 
-const login = catchAsync(async (req, res, next) => {});
+const login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new CustomError('Please enter your email and password', 400);
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !(await user.checkPassword(password, user.password))) {
+    throw new CustomError('Incorrect email or password', 401);
+  }
+
+  createSendToken(user, 200, res);
+});
 
 export { signUp, login };
