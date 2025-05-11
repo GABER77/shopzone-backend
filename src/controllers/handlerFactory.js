@@ -3,7 +3,7 @@ import catchAsync from '../utils/catchAsync.js';
 const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     // Prevent users from setting the date manually, if it exists
-    if ('date' in req.body) {
+    if ('createdAt' in req.body) {
       delete req.body.date;
     }
 
