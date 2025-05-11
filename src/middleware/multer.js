@@ -1,7 +1,7 @@
 import multer from 'multer';
 import CustomError from '../utils/customError.js';
 
-// 1. Save image temporarily in memory buffer for processing
+// 1. Save image temporarily in memory buffer (stored in req.files)
 const multerStorage = multer.memoryStorage();
 
 // 2. File filter - only accept images
@@ -17,6 +17,9 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
+  limits: {
+    fileSize: 2 * 1024 * 1024,
+  },
 });
 
 export default upload;
