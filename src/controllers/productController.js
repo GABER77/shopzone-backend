@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
-import fs from 'fs';
+import streamifier from 'streamifier';
 import { v2 as cloudinary } from 'cloudinary';
 import catchAsync from '../utils/catchAsync.js';
 import CustomError from '../utils/customError.js';
@@ -15,31 +15,42 @@ const resizeAndCloudinaryUpload = catchAsync(async (req, res, next) => {
 
   req.body.images = [];
 
-  // Create a unique product folder name based on the unique identifier
+  // Create a unique folder name for product in Cloudinary using unique identifier
   const uniqueID = uuidv4();
-  const productFolder = `products/${uniqueID}`;
+  const productFolder = `product/${uniqueID}`;
+  req.body.cloudinaryFolder = productFolder; // Needed when deleting a product
 
   await Promise.all(
     req.files.images.map(async (file, i) => {
-      const fileName = `${i + 1}`;
-      const filePath = `./public/temp/${fileName}`; // Temporary file path
-
-      await sharp(file.buffer)
+      // 1. Use sharp to compress and resize the image from memory
+      const processedImageBuffer = await sharp(file.buffer)
         .resize(1000, 1000)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
-        .toFile(filePath);
+        .toBuffer();
 
-      const result = await cloudinary.uploader.upload(filePath, {
-        public_id: fileName,
-        folder: productFolder,
-        resource_type: 'image',
-      });
+      // 2. Upload the processed image buffer to Cloudinary using stream
+      const streamUpload = () =>
+        new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: productFolder,
+              public_id: `${i + 1}`,
+              resource_type: 'image',
+            },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            },
+          );
+
+          // Convert buffer into a readable stream and pipe it to Cloudinary
+          streamifier.createReadStream(processedImageBuffer).pipe(uploadStream);
+        });
+
+      const result = await streamUpload();
 
       req.body.images.push(result.secure_url);
-
-      // Delete the temporary file after uploading
-      fs.unlinkSync(filePath);
     }),
   );
 

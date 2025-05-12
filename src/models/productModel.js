@@ -44,8 +44,8 @@ const productSchema = mongoose.Schema({
   size: {
     type: [Number],
     validate: {
-      validator: function (value) {
-        return value.length > 0;
+      validator: function (val) {
+        return val.length > 0 && val.every((num) => typeof num === 'number');
       },
       message: 'A product must have at least one size.',
     },
@@ -53,6 +53,9 @@ const productSchema = mongoose.Schema({
   onSale: {
     type: Boolean,
     default: false,
+  },
+  cloudinaryFolder: {
+    type: String,
   },
   createdAt: {
     type: Date,
