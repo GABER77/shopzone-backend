@@ -8,7 +8,7 @@ productRouter
   .get(productController.getAllProducts)
   .post(
     productController.uploadImagesToBuffer,
-    productController.resizeAndPushImages,
+    productController.resizeAndCloudinaryUpload,
     productController.createProduct,
   );
 
