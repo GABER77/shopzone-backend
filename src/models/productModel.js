@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import slugify from 'slugify';
 
 const productSchema = mongoose.Schema({
   name: {
@@ -64,6 +65,12 @@ const productSchema = mongoose.Schema({
     default: Date.now,
     immutable: true,
   },
+});
+
+// Generate a slug from the product name before saving the document
+productSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
 });
 
 const Product =

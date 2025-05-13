@@ -59,6 +59,8 @@ const login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-const authController = { signUp, login };
+const protect = catchAsync(async (req, res, next) => {});
+
+const authController = { signUp, login, protect };
 
 export default authController;

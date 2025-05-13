@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: {
         values: ['user', 'seller', 'admin'],
-        message: 'Role is either: user or admin',
+        message: 'Role is either: user, seller, admin',
       },
       default: 'user',
     },
@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
       default: true,
       select: false,
     },
+    passwordChangedAt: Date,
   },
   { minimize: false }, // This tells Mongoose: keep empty objects
 );
@@ -78,6 +79,13 @@ userSchema.methods.checkPassword = async function (
 ) {
   return await bcrypt.compare(givenPassword, storedPassword);
 };
+
+// Set passwordChangedAt when the user changes his password
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 

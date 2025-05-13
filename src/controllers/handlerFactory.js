@@ -27,9 +27,12 @@ const getAll = (Model) =>
     });
   });
 
-const getOne = (Model) =>
+const getOne = (Model, populateOptions) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findById(req.params.id);
+    let query = Model.findById(req.params.id);
+    if (populateOptions) query = query.populate(populateOptions);
+
+    const doc = await query;
 
     if (!doc) {
       throw new CustomError('No document found with that ID', 404);
