@@ -41,9 +41,34 @@ const getOne = (Model) =>
     });
   });
 
+const deleteOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    // 1. Find the product by ID
+    const doc = await Model.findById(req.params.id);
+
+    if (!doc) {
+      throw new CustomError('No document found with that ID', 404);
+    }
+
+    // 2. Delete images folder from Cloudinary using the stored folder path
+    if (doc.cloudinaryFolder) {
+      await cloudinary.api.delete_resources_by_prefix(doc.cloudinaryFolder);
+      await cloudinary.api.delete_folder(doc.cloudinaryFolder);
+    }
+
+    // 3. Delete the document from the database
+    await doc.deleteOne();
+
+    res.status(204).json({
+      status: 'success',
+      message: null,
+    });
+  });
+
 const handlerFactory = {
   createOne,
   getAll,
+  deleteOne,
   getOne,
 };
 export default handlerFactory;
