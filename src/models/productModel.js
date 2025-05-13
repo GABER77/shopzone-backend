@@ -56,6 +56,8 @@ const productSchema = mongoose.Schema({
   },
   cloudinaryFolder: {
     type: String,
+    select: false,
+    immutable: true,
   },
   createdAt: {
     type: Date,

@@ -17,12 +17,12 @@ const resizeAndCloudinaryUpload = catchAsync(async (req, res, next) => {
 
   // Create a unique folder name for product in Cloudinary using unique identifier
   const uniqueID = uuidv4();
-  const productFolder = `product/${uniqueID}`;
+  const productFolder = `products/${uniqueID}`;
   req.body.cloudinaryFolder = productFolder; // Needed when deleting a product
 
   await Promise.all(
     req.files.images.map(async (file, i) => {
-      // 1. Use sharp to compress and resize the image from memory
+      // 1. Use sharp to compress and resize the image
       const processedImageBuffer = await sharp(file.buffer)
         .resize(1000, 1000)
         .toFormat('jpeg')
@@ -58,10 +58,10 @@ const resizeAndCloudinaryUpload = catchAsync(async (req, res, next) => {
 });
 
 const createProduct = handlerFactory.createOne(Product);
-const getAllProducts = catchAsync(async (req, res, next) => {});
-const getProduct = catchAsync(async (req, res, next) => {});
+const getAllProducts = handlerFactory.getAll(Product);
+const getProduct = handlerFactory.getOne(Product);
 const updateProduct = catchAsync(async (req, res, next) => {});
-const deleteProduct = catchAsync(async (req, res, next) => {});
+const deleteProduct = handlerFactory.deleteOne(Product);
 
 const productController = {
   createProduct,
