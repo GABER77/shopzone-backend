@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isEmail, 'Please enter a valid email'],
       unique: true,
       lowercase: true,
+      trim: true,
     },
     photo: {
       type: String,
@@ -72,7 +73,14 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Instance method: available in all document in a certain collection.
+// Set passwordChangedAt when the user changes his password
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+// Instance method: available in all document in a certain collection
 userSchema.methods.checkPassword = async function (
   givenPassword,
   storedPassword,
@@ -80,12 +88,17 @@ userSchema.methods.checkPassword = async function (
   return await bcrypt.compare(givenPassword, storedPassword);
 };
 
-// Set passwordChangedAt when the user changes his password
-userSchema.pre('save', function (next) {
-  if (!this.isModified('password') || this.isNew) return next();
-  this.passwordChangedAt = Date.now() - 1000;
-  next();
-});
+userSchema.methods.changedPasswordAfter = function (JWTIssuedAt) {
+  if (this.passwordChangedAt) {
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+    return JWTIssuedAt < changedTimeStamp;
+  }
+  // False means password not changed.
+  return false;
+};
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 

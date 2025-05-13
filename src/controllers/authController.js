@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { promisify } from 'util';
 import catchAsync from '../utils/catchAsync.js';
 import CustomError from '../utils/customError.js';
 import User from '../models/userModel.js';
@@ -59,7 +60,41 @@ const login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-const protect = catchAsync(async (req, res, next) => {});
+const protect = catchAsync(async (req, res, next) => {
+  // 1) Getting the token
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  if (!token) {
+    throw new CustomError('Please login to get access', 401);
+  }
+
+  // 2) Verify the token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  // 3) Check if user still exists: Maybe he deleted his account
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    throw new CustomError('This user is no longer exists', 401);
+  }
+
+  // 4) Check if user changed his password
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    throw new CustomError(
+      'User recently changed password, Please login again',
+      401,
+    );
+  }
+  req.user = currentUser;
+  next();
+});
 
 const authController = { signUp, login, protect };
 
