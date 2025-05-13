@@ -9,6 +9,9 @@ const createOne = (Model) =>
       delete req.body.createdAt;
     }
 
+    // Automatically set the seller if the model is Product
+    if (Model.modelName === 'Product') req.body.seller = req.user._id;
+
     const doc = await Model.create(req.body);
 
     res.status(201).json({

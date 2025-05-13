@@ -77,7 +77,7 @@ const protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verify the token
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
   // 3) Check if user still exists: Maybe he deleted his account
   const currentUser = await User.findById(decoded.id);
@@ -96,6 +96,18 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-const authController = { signUp, login, protect };
+const restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      throw new CustomError(
+        'You do not have permission to perform this action.',
+        403,
+      );
+    }
+    next();
+  };
+
+const authController = { signUp, login, protect, restrictTo };
 
 export default authController;

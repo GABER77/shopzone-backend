@@ -9,6 +9,7 @@ productRouter
   .get(productController.getAllProducts)
   .post(
     authController.protect,
+    authController.restrictTo('seller', 'admin'),
     productController.uploadImagesToBuffer,
     productController.resizeAndCloudinaryUpload,
     productController.createProduct,
@@ -17,7 +18,15 @@ productRouter
 productRouter
   .route('/:id')
   .get(productController.getProduct)
-  .patch(productController.updateProduct)
-  .delete(productController.deleteProduct);
+  .patch(
+    authController.protect,
+    authController.restrictTo('seller', 'admin'),
+    productController.updateProduct,
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo('seller', 'admin'),
+    productController.deleteProduct,
+  );
 
 export default productRouter;

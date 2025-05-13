@@ -55,6 +55,11 @@ const productSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  seller: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: [true, 'A product must belong to a seller'],
+  },
   cloudinaryFolder: {
     type: String,
     select: false,
