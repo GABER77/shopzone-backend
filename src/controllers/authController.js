@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
 import catchAsync from '../utils/catchAsync.js';
 import CustomError from '../utils/customError.js';
 import User from '../models/userModel.js';
@@ -16,7 +15,7 @@ const createSendToken = (user, statusCode, res) => {
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-    ), // Remove the cookie from the browser
+    ), // Remove the cookie from the browser after this time
     httpOnly: true,
   };
 
@@ -28,9 +27,7 @@ const createSendToken = (user, statusCode, res) => {
   res.status(statusCode).json({
     status: 'success',
     token,
-    data: {
-      user,
-    },
+    user,
   });
 };
 
@@ -58,6 +55,14 @@ const login = catchAsync(async (req, res, next) => {
   }
 
   createSendToken(user, 200, res);
+});
+
+const logout = catchAsync(async (req, res, next) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000), // 10 seconds
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
 });
 
 const protect = catchAsync(async (req, res, next) => {
@@ -108,6 +113,6 @@ const restrictTo =
     next();
   };
 
-const authController = { signUp, login, protect, restrictTo };
+const authController = { signUp, login, protect, restrictTo, logout };
 
 export default authController;

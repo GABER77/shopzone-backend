@@ -6,8 +6,8 @@ const handleCastErrorDB = (error) => {
 };
 
 const handleDuplicateFieldsDB = (error) => {
-  const matches = error.message?.match(/(["'])(\\?.)*?\1/);
-  const value = matches ? matches[0] : 'Field';
+  const match = error.errorResponse.errmsg.match(/(["'])(.*?)\1/);
+  const value = match ? match[2] : 'Field';
   const message = `${value} already exists, please try a unique value`;
   return new CustomError(message, 400);
 };
