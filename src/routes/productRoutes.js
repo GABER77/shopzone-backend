@@ -18,8 +18,7 @@ productRouter
   .route('/')
   .post(
     productController.uploadImagesToBuffer,
-    productController.resizeAndCloudinaryUpload,
-    productController.createProduct,
+    productController.createProductAndUploadImages,
   );
 
 productRouter

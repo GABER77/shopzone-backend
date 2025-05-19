@@ -42,7 +42,7 @@ const productSchema = mongoose.Schema({
     },
     trim: true,
   },
-  size: {
+  sizes: {
     type: [Number],
     validate: {
       validator: function (val) {

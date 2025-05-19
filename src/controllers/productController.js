@@ -10,16 +10,25 @@ import upload from '../middleware/multer.js';
 
 const uploadImagesToBuffer = upload.fields([{ name: 'images', maxCount: 3 }]);
 
-const resizeAndCloudinaryUpload = catchAsync(async (req, res, next) => {
-  if (!req.files || !req.files.images) return next();
+// Create product with delayed image upload
+const createProductAndUploadImages = catchAsync(async (req, res, next) => {
+  // Attach seller to the body
+  req.body.seller = req.user._id;
 
+  // Prevent users from setting createdAt manually
+  if ('createdAt' in req.body) delete req.body.createdAt;
+
+  // 2. Prepare Cloudinary folder
+  const productFolder = `products/${uuidv4()}`;
+  req.body.cloudinaryFolder = productFolder;
+
+  // Step 1: Create product (validates fields via schema)
+  const newProduct = await Product.create(req.body);
+
+  // Initialize images array for URLs
   req.body.images = [];
 
-  // Create a unique folder name for product in Cloudinary using unique identifier
-  const uniqueID = uuidv4();
-  const productFolder = `products/${uniqueID}`;
-  req.body.cloudinaryFolder = productFolder; // Needed when deleting a product
-
+  // Step 3: Process and upload each image
   await Promise.all(
     req.files.images.map(async (file, i) => {
       // 1. Use sharp to compress and resize the image
@@ -54,23 +63,29 @@ const resizeAndCloudinaryUpload = catchAsync(async (req, res, next) => {
     }),
   );
 
-  next();
+  newProduct.images = req.body.images;
+  await newProduct.save();
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      data: newProduct,
+    },
+  });
 });
 
-const createProduct = handlerFactory.createOne(Product);
 const getAllProducts = handlerFactory.getAll(Product);
 const getProduct = handlerFactory.getOne(Product);
 const updateProduct = catchAsync(async (req, res, next) => {});
 const deleteProduct = handlerFactory.deleteOne(Product);
 
 const productController = {
-  createProduct,
   getAllProducts,
   getProduct,
   updateProduct,
   deleteProduct,
   uploadImagesToBuffer,
-  resizeAndCloudinaryUpload,
+  createProductAndUploadImages,
 };
 
 export default productController;
