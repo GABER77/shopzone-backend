@@ -12,6 +12,9 @@ const uploadImagesToBuffer = upload.fields([{ name: 'images', maxCount: 3 }]);
 
 // Create product with delayed image upload
 const createProductAndUploadImages = catchAsync(async (req, res, next) => {
+  if (!req.files || !req.files.images || req.files.images.length === 0)
+    throw new CustomError('Please upload at least one image.', 400);
+
   // Attach seller to the body
   req.body.seller = req.user._id;
 

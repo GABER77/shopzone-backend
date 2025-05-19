@@ -20,12 +20,6 @@ const productSchema = mongoose.Schema({
   },
   images: {
     type: [String],
-    validate: {
-      validator: function (val) {
-        return val.length > 0 && val[0].trim() !== '';
-      },
-      message: 'A product must have at least one image.',
-    },
   },
   category: {
     type: String,
