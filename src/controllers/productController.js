@@ -12,28 +12,26 @@ const uploadImagesToBuffer = upload.fields([{ name: 'images', maxCount: 3 }]);
 
 // Create product with delayed image upload
 const createProductAndUploadImages = catchAsync(async (req, res, next) => {
+  // Check if at least one image is uploaded
   if (!req.files || !req.files.images || req.files.images.length === 0)
     throw new CustomError('Please upload at least one image.', 400);
 
-  // Attach seller to the body
+  // Attach the current user's ID as the seller
   req.body.seller = req.user._id;
 
   // Prevent users from setting createdAt manually
   if ('createdAt' in req.body) delete req.body.createdAt;
 
-  // 2. Prepare Cloudinary folder
+  // Generate a unique Cloudinary folder for the product
   const productFolder = `products/${uuidv4()}`;
   req.body.cloudinaryFolder = productFolder;
 
   // Step 1: Create product (validates fields via schema)
   const newProduct = await Product.create(req.body);
 
-  // Initialize images array for URLs
-  req.body.images = [];
-
-  // Step 3: Process and upload each image
-  await Promise.all(
-    req.files.images.map(async (file, i) => {
+  // Step 2: Upload images in parallel but keep track of their original order
+  const uploadResults = await Promise.all(
+    req.files.images.map(async (file, index) => {
       // 1. Use sharp to compress and resize the image
       const processedImageBuffer = await sharp(file.buffer)
         .resize(1000, 1000)
@@ -47,25 +45,31 @@ const createProductAndUploadImages = catchAsync(async (req, res, next) => {
           const uploadStream = cloudinary.uploader.upload_stream(
             {
               folder: productFolder,
-              public_id: `${i + 1}`,
+              public_id: `${index + 1}`,
               resource_type: 'image',
             },
             (error, result) => {
               if (error) return reject(error);
-              resolve(result);
+              // Attach original index for later sorting
+              resolve({ index, url: result.secure_url });
             },
           );
 
           // Convert buffer into a readable stream and pipe it to Cloudinary
           streamifier.createReadStream(processedImageBuffer).pipe(uploadStream);
         });
-
-      const result = await streamUpload();
-
-      req.body.images.push(result.secure_url);
+      // Await the upload and return the indexed result
+      return await streamUpload();
     }),
   );
 
+  // Sort results by original file index to maintain upload order
+  uploadResults.sort((a, b) => a.index - b.index);
+
+  // Extract just the secure URLs in the correct order
+  req.body.images = uploadResults.map((item) => item.url);
+
+  // Step 3: Attach the image URLs to the product and save
   newProduct.images = req.body.images;
   await newProduct.save();
 
