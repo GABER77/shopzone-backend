@@ -10,7 +10,7 @@ router.use(authController.protect);
 router.route('/').get(cartController.getCart).delete(cartController.clearCart);
 
 router
-  .route('/:productId')
+  .route('/:id')
   .post(cartController.addToCart)
   .delete(cartController.removeFromCart);
 
