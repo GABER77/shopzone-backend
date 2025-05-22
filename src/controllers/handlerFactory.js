@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import catchAsync from '../utils/catchAsync.js';
 import CustomError from '../utils/customError.js';
+import APIFeatures from '../utils/apiFeatures.js';
 
 const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -17,13 +18,27 @@ const createOne = (Model) =>
     });
   });
 
-const getAll = (Model) =>
+export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    const data = await Model.find();
+    // Allow filtering by nested routes (reviews for a tour)
+    let filter = {};
+    if (req.params.tourId) filter = { tour: req.params.tourId };
 
+    // 1. Build the query using APIFeatures
+    const features = new APIFeatures(Model.find(filter), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    // 2. Execute the query
+    const docs = await features.query;
+
+    // 3. Send the response
     res.status(200).json({
       status: 'success',
-      data,
+      results: docs.length,
+      data: docs,
     });
   });
 
