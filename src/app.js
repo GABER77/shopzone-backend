@@ -28,6 +28,9 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Parse nested query strings (e.g., price[lt]=200) into objects
+app.set('query parser', 'extended');
+
 // Body parser, Reading data from the body into req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
