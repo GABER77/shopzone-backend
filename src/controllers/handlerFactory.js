@@ -18,26 +18,29 @@ const createOne = (Model) =>
     });
   });
 
-export const getAll = (Model) =>
+const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    // Allow filtering by nested routes (reviews for a tour)
     let filter = {};
     if (req.params.tourId) filter = { tour: req.params.tourId };
 
-    // 1. Build the query using APIFeatures
+    // Build the base query without pagination
+    const baseQuery = new APIFeatures(Model.find(filter), req.query).filter();
+
+    // Get total count of matching docs BEFORE pagination
+    const totalResults = await baseQuery.query.countDocuments();
+
+    // Now apply sorting, field limiting, pagination
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
 
-    // 2. Execute the query
     const docs = await features.query;
 
-    // 3. Send the response
     res.status(200).json({
       status: 'success',
-      results: docs.length,
+      results: totalResults, // <-- total matching products count (not just current page length)
       data: docs,
     });
   });
