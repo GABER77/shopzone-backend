@@ -5,9 +5,11 @@ class APIFeatures {
   }
 
   filter() {
-    // Create a shallow copy
+    // Create a shallow copy to avoid mutating original query
     const queryObj = { ...this.reqQuery };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+
+    // Fields to exclude from filtering since they are handled separately
+    const excludedFields = ['page', 'sort', 'limit', 'fields', 'searchText'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
     // Advanced filtering (gte, gt, lte, lt)
@@ -15,7 +17,35 @@ class APIFeatures {
     // Replace operators (gte, gt, lte, lt) with MongoDB format ($gte, $gt, etc.)
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    this.query = this.query.find(JSON.parse(queryStr));
+    let finalFilter = JSON.parse(queryStr);
+
+    // >>>>> Handle search - a special case of filtering >>>>>
+
+    // Removes whitespace from the start and end of the string
+    const searchText = this.reqQuery.searchText?.trim();
+    if (searchText) {
+      // Create a case-insensitive regex(Regular Expression) from searchText
+      const searchRegex = new RegExp(searchText, 'i');
+
+      // Combine existing filters AND search with $and operator
+      finalFilter = {
+        $and: [
+          finalFilter, // Existing filters (e.g. category, price)
+          {
+            $or: [
+              { name: searchRegex },
+              { category: searchRegex },
+              { description: searchRegex },
+            ],
+          },
+        ],
+      };
+    }
+
+    // Apply the final combined filter to the mongoose query
+    this.query = this.query.find(finalFilter);
+
+    // Return 'this' to allow chaining with other APIFeatures methods like sort, paginate
     return this;
   }
 
