@@ -10,6 +10,12 @@ userRouter.post('/logout', authController.logout);
 
 userRouter.use(authController.protect);
 
-userRouter.get('/me', userController.getMe);
+userRouter.get('/me', userController.getMe, userController.getUser);
+userRouter.patch(
+  '/update-me',
+  userController.uploadImageToBuffer,
+  userController.resizeUserPhoto,
+  userController.updateMe,
+);
 
 export default userRouter;

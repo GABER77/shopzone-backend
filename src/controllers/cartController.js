@@ -23,7 +23,7 @@ const addToCart = catchAsync(async (req, res, next) => {
   const { quantity = 1, size } = req.body;
 
   // Validate that size is provided
-  if (size === undefined || size === null) {
+  if (size === undefined || size === null || size === '') {
     throw new CustomError('Shoe size is required', 400);
   }
 
