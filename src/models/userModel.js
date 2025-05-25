@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      default: 'defaultUser.jpg',
+      default:
+        'https://res.cloudinary.com/dj4ekmhwa/image/upload/v1748196386/defaultUser.jpg',
     },
     password: {
       type: String,
@@ -72,6 +73,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
       select: false,
+    },
+    cloudinaryFolder: {
+      type: String,
+      immutable: true,
     },
     active: {
       type: Boolean,

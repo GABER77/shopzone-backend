@@ -17,16 +17,17 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ), // Remove the cookie from the browser after this time
     httpOnly: true,
+    sameSite: 'Lax', // Limits cookie to same-site requests for CSRF protection
   };
 
   if (process.env.NODE_ENV === 'production') {
-    cookieOptions.secure = true;
-    res.cookie('jwt', token, cookieOptions);
+    cookieOptions.secure = true; // Only send cookie over HTTPS in production
   }
+
+  res.cookie('jwt', token, cookieOptions);
 
   res.status(statusCode).json({
     status: 'success',
-    token,
     user,
   });
 };

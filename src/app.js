@@ -20,9 +20,6 @@ app.use(
   }),
 );
 
-// Reading static files
-app.use(express.static('public'));
-
 //Logging incoming requests
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));

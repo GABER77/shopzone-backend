@@ -5,7 +5,7 @@ import checkProductOwnership from '../middleware/checkProductOwnership.js';
 
 const productRouter = express.Router();
 
-// Public routes
+// Public routes (No Authentication Required)
 productRouter.route('/').get(productController.getAllProducts);
 productRouter.route('/:id').get(productController.getProduct);
 
