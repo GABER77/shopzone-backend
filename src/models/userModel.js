@@ -73,6 +73,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
       select: false,
+      immutable: true,
     },
     cloudinaryFolder: {
       type: String,
@@ -81,7 +82,6 @@ const userSchema = new mongoose.Schema(
     active: {
       type: Boolean,
       default: true,
-      select: false,
     },
     passwordChangedAt: Date,
   },

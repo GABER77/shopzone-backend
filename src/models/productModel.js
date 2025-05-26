@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import slugify from 'slugify';
 
 const productSchema = mongoose.Schema({
   name: {
@@ -7,7 +6,6 @@ const productSchema = mongoose.Schema({
     required: [true, 'A product must have a name'],
     trim: true,
   },
-  slug: String,
   description: {
     type: String,
     required: [true, 'A product must have a description'],
@@ -53,6 +51,7 @@ const productSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: [true, 'A product must belong to a seller'],
+    immutable: true,
   },
   cloudinaryFolder: {
     type: String,
@@ -63,12 +62,6 @@ const productSchema = mongoose.Schema({
     default: Date.now,
     immutable: true,
   },
-});
-
-// Generate a slug from the product name before saving the document
-productSchema.pre('save', function (next) {
-  this.slug = slugify(this.name, { lower: true });
-  next();
 });
 
 const Product =

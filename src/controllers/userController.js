@@ -67,7 +67,7 @@ const updateMe = catchAsync(async (req, res, next) => {
     );
   }
 
-  // 3) Filtered out unwanted fields name that is not allowed to be updated
+  // 3) Keep only allowed fields for update (filter out all others)
   const filteredBody = filterObject(
     req.body,
     'name',

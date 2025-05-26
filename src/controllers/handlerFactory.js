@@ -2,6 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import catchAsync from '../utils/catchAsync.js';
 import CustomError from '../utils/customError.js';
 import APIFeatures from '../utils/apiFeatures.js';
+import filterObject from '../utils/filterObject.js';
 
 const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -56,6 +57,8 @@ const getOne = (Model, populateOptions) =>
 const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
     // Check if the user didn't provide data to update
+    // Using Postman: You need to provide data in raw not form-data
+    // Otherwise this if sttatement will throw the error
     if (!req.body || Object.keys(req.body).length === 0) {
       throw new CustomError(
         'Request body is empty. Please provide data to update.',
@@ -69,6 +72,12 @@ const updateOne = (Model) =>
         'This route is not for password update, Please use / update-password',
         400,
       );
+    }
+
+    // Filter fields only for User model
+    // Keep only allowed fields for update (filter out all others)
+    if (Model.modelName === 'User') {
+      req.body = filterObject(req.body, 'name', 'email', 'role', 'active');
     }
 
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {

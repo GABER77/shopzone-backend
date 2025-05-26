@@ -83,7 +83,7 @@ const createProductAndUploadImages = catchAsync(async (req, res, next) => {
 
 const getAllProducts = handlerFactory.getAll(Product);
 const getProduct = handlerFactory.getOne(Product);
-const updateProduct = catchAsync(async (req, res, next) => {});
+const updateProduct = handlerFactory.updateOne(Product);
 const deleteProduct = handlerFactory.deleteOne(Product);
 
 const productController = {
