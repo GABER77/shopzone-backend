@@ -51,8 +51,8 @@ const resizeUserPhoto = catchAsync(async (req, res, next) => {
 });
 
 const updateMe = catchAsync(async (req, res, next) => {
-  // 1) Check if the user provide data to update
-  if (!req.body) {
+  // 1) Check if the user didn't provide data to update
+  if (!req.body || Object.keys(req.body).length === 0) {
     throw new CustomError(
       'Request body is empty. Please provide data to update.',
       400,
@@ -73,8 +73,8 @@ const updateMe = catchAsync(async (req, res, next) => {
     'name',
     'email',
     'cloudinaryFolder',
+    'image',
   );
-  if (req.body.image) filteredBody.image = req.body.image;
 
   // 4) Update user data
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {

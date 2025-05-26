@@ -55,8 +55,8 @@ const getOne = (Model, populateOptions) =>
 
 const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    // Check if the user provide data to update
-    if (!req.body) {
+    // Check if the user didn't provide data to update
+    if (!req.body || Object.keys(req.body).length === 0) {
       throw new CustomError(
         'Request body is empty. Please provide data to update.',
         400,
