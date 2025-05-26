@@ -20,23 +20,14 @@ const createOne = (Model) =>
 
 const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    let filter = {};
-    if (req.params.tourId) filter = { tour: req.params.tourId };
-
     // Build the base query without pagination
-    const baseQuery = new APIFeatures(Model.find(filter), req.query).filter();
+    const baseFeatures = new APIFeatures(Model.find(), req.query).filter();
 
     // Get total count of matching docs BEFORE pagination
-    const totalResults = await baseQuery.query.countDocuments();
+    // To determine total number of pages in frontend
+    const totalResults = await baseFeatures.query.clone().countDocuments();
 
-    // Now apply sorting, field limiting, pagination
-    const features = new APIFeatures(Model.find(filter), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    const docs = await features.query;
+    const docs = await baseFeatures.sort().limitFields().paginate().query;
 
     res.status(200).json({
       status: 'success',

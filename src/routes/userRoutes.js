@@ -22,4 +22,9 @@ userRouter.patch(
 );
 userRouter.delete('/delete-me', userController.deleteMe);
 
+// Restrict all routes below to Admins only
+userRouter.use(authController.restrictTo('admin'));
+
+userRouter.get('/', userController.getAllUsers);
+
 export default userRouter;

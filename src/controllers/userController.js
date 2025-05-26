@@ -93,6 +93,7 @@ const deleteMe = catchAsync(async (req, res, next) => {
 });
 
 const getUser = handlerFactory.getOne(User);
+const getAllUsers = handlerFactory.getAll(User);
 
 const userController = {
   getMe,
@@ -101,6 +102,7 @@ const userController = {
   resizeUserPhoto,
   updateMe,
   deleteMe,
+  getAllUsers,
 };
 
 export default userController;
