@@ -44,7 +44,7 @@ const resizeUserPhoto = catchAsync(async (req, res, next) => {
     });
 
   // 4. Attach data to req.body
-  req.body.photo = await streamUpload();
+  req.body.image = await streamUpload();
   req.body.cloudinaryFolder = userFolder;
 
   next();

@@ -69,13 +69,13 @@ const logout = catchAsync(async (req, res, next) => {
 const protect = catchAsync(async (req, res, next) => {
   // 1) Getting the token
   let token;
-  if (
+  if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  } else if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -114,6 +114,53 @@ const restrictTo =
     next();
   };
 
-const authController = { signUp, login, protect, restrictTo, logout };
+const updatePassword = catchAsync(async (req, res, next) => {
+  const { oldPassword, newPassword, newPasswordConfirm } = req.body;
+
+  // 1) Check if the user give me all the require input
+  if (!oldPassword || !newPassword || !newPasswordConfirm) {
+    throw new CustomError(
+      'Please provide oldPassword, newPassword, and newPasswordConfirm.',
+      400,
+    );
+  }
+
+  // 2) Find user and include password
+  const user = await User.findById(req.user.id).select('+password');
+  if (!user) {
+    throw new CustomError('User not found', 404);
+  }
+
+  // 3) Check if the old password is correct
+  if (!(await user.checkPassword(req.body.oldPassword, user.password))) {
+    throw new CustomError('Old password is not correct', 401);
+  }
+
+  // 4) Prevent reuse of current password
+  const isSamePassword = await user.checkPassword(newPassword, user.password);
+  if (isSamePassword) {
+    throw new CustomError(
+      'New password must be different from the old one.',
+      400,
+    );
+  }
+
+  // 5) Update the password
+  user.password = req.body.newPassword;
+  user.passwordConfirm = req.body.newPasswordConfirm;
+  await user.save(); // Triggers .pre('save') hooks for hashing and passwordChangedAt
+
+  // 6) Login user, send JWT
+  createSendToken(user, 200, res);
+});
+
+const authController = {
+  signUp,
+  login,
+  protect,
+  restrictTo,
+  logout,
+  updatePassword,
+};
 
 export default authController;

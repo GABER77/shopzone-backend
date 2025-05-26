@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    photo: {
+    image: {
       type: String,
       default:
         'https://res.cloudinary.com/dj4ekmhwa/image/upload/v1748196386/defaultUser.jpg',

@@ -58,7 +58,7 @@ const getOne = (Model, populateOptions) =>
 
     res.status(200).json({
       status: 'success',
-      data: { data: doc },
+      doc,
     });
   });
 

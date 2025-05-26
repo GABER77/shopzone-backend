@@ -12,6 +12,7 @@ userRouter.post('/logout', authController.logout);
 // Protect all routes that come after this middleware
 userRouter.use(authController.protect);
 
+userRouter.patch('/update-password', authController.updatePassword);
 userRouter.get('/me', userController.getMe, userController.getUser);
 userRouter.patch(
   '/update-me',
