@@ -51,7 +51,15 @@ const resizeUserPhoto = catchAsync(async (req, res, next) => {
 });
 
 const updateMe = catchAsync(async (req, res, next) => {
-  // 1) Create error if user post a password data
+  // 1) Check if the user provide data to update
+  if (!req.body) {
+    throw new CustomError(
+      'Request body is empty. Please provide data to update.',
+      400,
+    );
+  }
+
+  // 2) Create error if user post a password data
   if (req.body.password || req.body.passwordConfirm) {
     throw new CustomError(
       'This route is not for password update, Please use / update-password',
@@ -59,16 +67,16 @@ const updateMe = catchAsync(async (req, res, next) => {
     );
   }
 
-  // 2) Filtered out unwanted fields name that is not allowed to be updated
+  // 3) Filtered out unwanted fields name that is not allowed to be updated
   const filteredBody = filterObject(
     req.body,
     'name',
     'email',
     'cloudinaryFolder',
   );
-  if (req.body.photo) filteredBody.photo = req.body.photo;
+  if (req.body.image) filteredBody.image = req.body.image;
 
-  // 3) Update user data
+  // 4) Update user data
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true, // validate the fields being updated
@@ -94,6 +102,9 @@ const deleteMe = catchAsync(async (req, res, next) => {
 
 const getUser = handlerFactory.getOne(User);
 const getAllUsers = handlerFactory.getAll(User);
+// DO NOT UPDATE THE PASSWORD USING THIS UPDATE
+const updateUser = handlerFactory.updateOne(User);
+const deleteUser = handlerFactory.deleteOne(User);
 
 const userController = {
   getMe,
@@ -103,6 +114,8 @@ const userController = {
   updateMe,
   deleteMe,
   getAllUsers,
+  updateUser,
+  deleteUser,
 };
 
 export default userController;

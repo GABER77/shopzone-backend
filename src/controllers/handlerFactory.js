@@ -53,15 +53,49 @@ const getOne = (Model, populateOptions) =>
     });
   });
 
-const deleteOne = (Model) =>
+const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    // 1. Find the product by ID
-    const doc = await Model.findById(req.params.id);
+    // Check if the user provide data to update
+    if (!req.body) {
+      throw new CustomError(
+        'Request body is empty. Please provide data to update.',
+        400,
+      );
+    }
+
+    //  Create error if user post a password data
+    if (req.body.password || req.body.passwordConfirm) {
+      throw new CustomError(
+        'This route is not for password update, Please use / update-password',
+        400,
+      );
+    }
+
+    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+      new: true, // Return the new updated document
+      runValidators: true,
+    });
 
     if (!doc) {
       throw new CustomError('No document found with that ID', 404);
     }
 
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: doc,
+      },
+    });
+  });
+
+const deleteOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    // 1. Find the document by ID
+    const doc = await Model.findById(req.params.id);
+
+    if (!doc) {
+      throw new CustomError('No document found with that ID', 404);
+    }
     // 2. Delete images folder from Cloudinary using the stored folder path
     if (doc.cloudinaryFolder) {
       await cloudinary.api.delete_resources_by_prefix(doc.cloudinaryFolder);
@@ -82,5 +116,6 @@ const handlerFactory = {
   getAll,
   deleteOne,
   getOne,
+  updateOne,
 };
 export default handlerFactory;

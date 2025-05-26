@@ -76,7 +76,7 @@ const userSchema = new mongoose.Schema(
     },
     cloudinaryFolder: {
       type: String,
-      immutable: true,
+      default: '',
     },
     active: {
       type: Boolean,

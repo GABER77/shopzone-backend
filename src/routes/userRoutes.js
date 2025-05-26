@@ -26,5 +26,10 @@ userRouter.delete('/delete-me', userController.deleteMe);
 userRouter.use(authController.restrictTo('admin'));
 
 userRouter.get('/', userController.getAllUsers);
+userRouter
+  .route('/:id')
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser);
 
 export default userRouter;
