@@ -64,6 +64,9 @@ const productSchema = mongoose.Schema({
   },
 });
 
+// Create an index on 'seller' field to speed up searching by seller (getMyProducts)
+productSchema.index({ seller: 1 });
+
 const Product =
   mongoose.models.Product || mongoose.model('Product', productSchema);
 
