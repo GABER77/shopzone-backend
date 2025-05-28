@@ -7,6 +7,7 @@ import CustomError from '../utils/customError.js';
 import handlerFactory from './handlerFactory.js';
 import Product from '../models/productModel.js';
 import upload from '../middleware/multer.js';
+import APIFeatures from '../utils/apiFeatures.js';
 
 const uploadImagesToBuffer = upload.fields([{ name: 'images', maxCount: 3 }]);
 
@@ -81,6 +82,30 @@ const createProductAndUploadImages = catchAsync(async (req, res, next) => {
   });
 });
 
+const getMyProducts = catchAsync(async (req, res, next) => {
+  // Filter only products created by the current seller
+  const filter = { seller: req.user.id };
+
+  // Apply pagination
+  const features = new APIFeatures(Product.find(filter), req.query)
+    .sort()
+    .limitFields()
+    .paginate();
+
+  const products = await features.query;
+
+  // Count total products for pagination
+  const totalResults = await Product.countDocuments(filter);
+
+  res.status(200).json({
+    status: 'success',
+    totalResults,
+    data: {
+      products,
+    },
+  });
+});
+
 const getAllProducts = handlerFactory.getAll(Product);
 const getProduct = handlerFactory.getOne(Product);
 const updateProduct = handlerFactory.updateOne(Product);
@@ -93,6 +118,7 @@ const productController = {
   deleteProduct,
   uploadImagesToBuffer,
   createProductAndUploadImages,
+  getMyProducts,
 };
 
 export default productController;
