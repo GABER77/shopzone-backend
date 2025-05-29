@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
-import orderRouter from './routes/orderRoutes.js';
+import checkoutRouter from './routes/checkoutRoutes.js';
 import globalErrorHandler from './utils/globalErrorHandler.js';
 
 const app = express();
@@ -41,7 +41,7 @@ app.use(cookieParser());
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/cart', cartRouter);
-app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/checkout', checkoutRouter);
 
 app.use(globalErrorHandler);
 
