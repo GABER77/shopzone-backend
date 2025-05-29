@@ -48,6 +48,18 @@ const getCheckoutSession = catchAsync(async (req, res, next) => {
     line_items: lineItems,
     success_url: `${req.protocol}://localhost:5173/`,
     cancel_url: `${req.protocol}://localhost:5173/cart`,
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          type: 'fixed_amount',
+          fixed_amount: { amount: 1000, currency: 'usd' }, // $10 delivery
+          display_name: 'Standard Delivery',
+        },
+      },
+    ],
+    // automatic_tax: { enabled: true },
+    // Stripe calculates tax based on customer's address and tax rules
+    // Will throw error because we need to add a valid origin address to stripe account
   });
 
   // 4) Send session to frontend
