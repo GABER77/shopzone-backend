@@ -70,17 +70,66 @@ const getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
-const createOrder = (session) => {};
+const createOrder = async (session) => {
+  if (!session) {
+    throw new CustomError('Session data is missing', 400);
+  }
+
+  // 1. Find the user by email (from Stripe session)
+  const user = await User.findOne({ email: session.customer_email }).populate({
+    path: 'cart.product',
+    model: 'Product',
+  });
+
+  if (!user || !user.cart || user.cart.length === 0) {
+    throw new CustomError(
+      'User not found or cart is empty during order creation',
+      400,
+    );
+  }
+
+  // 2. Build products array from user's cart
+  const products = user.cart.map((item) => ({
+    product: item.product._id,
+    quantity: item.quantity,
+    price: item.product.price,
+    size: item.size,
+  }));
+
+  // 3. Create order
+  await Order.create({
+    user: user._id,
+    products,
+    amount: session.amount_total / 100, // from cents to dollars
+    paymentIntentId: session.payment_intent,
+    status: 'completed',
+    shippingDetails: {
+      name: session.customer_details?.name || '',
+      address: session.customer_details?.address?.line1 || '',
+      city: session.customer_details?.address?.city || '',
+      postalCode: session.customer_details?.address?.postal_code || '',
+      country: session.customer_details?.address?.country || '',
+    },
+  });
+
+  // 4. Clear user's cart
+  user.cart = [];
+  await user.save({ validateBeforeSave: false });
+
+  console.log('✅ Order created and cart cleared for', user.email);
+};
 
 const webhookCheckout = async (req, res, next) => {
   const signature = req.headers['stripe-signature'];
   let event;
 
+  // Webhook signature verification
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET,
+      // I used Stripe CLI to get the STRIPE_WEBHOOK_SECRET and test payment on local host
     );
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -88,7 +137,7 @@ const webhookCheckout = async (req, res, next) => {
 
   // Handle successful payment
   if (event.type === 'checkout.session.completed')
-    createOrder(event.data.object);
+    await createOrder(event.data.object);
 
   res.status(200).json({ received: true });
 };
