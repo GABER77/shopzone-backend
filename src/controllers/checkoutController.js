@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import catchAsync from '../utils/catchAsync.js';
 import User from '../models/userModel.js';
+import Order from '../models/orderModel.js';
 import CustomError from '../utils/customError.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -69,8 +70,32 @@ const getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
+const createOrder = (session) => {};
+
+const webhookCheckout = async (req, res, next) => {
+  const signature = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle successful payment
+  if (event.type === 'checkout.session.completed')
+    createOrder(event.data.object);
+
+  res.status(200).json({ received: true });
+};
+
 const checkoutController = {
   getCheckoutSession,
+  webhookCheckout,
 };
 
 export default checkoutController;

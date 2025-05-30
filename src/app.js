@@ -7,6 +7,7 @@ import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
 import checkoutRouter from './routes/checkoutRoutes.js';
+import checkoutController from './controllers/checkoutController.js';
 import globalErrorHandler from './utils/globalErrorHandler.js';
 
 const app = express();
@@ -25,6 +26,14 @@ app.use(
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Stripe webhook route must come BEFORE bodyParser.json() or express.json()
+// because Stripe needs raw body to verify signature
+app.post(
+  '/webhook',
+  express.raw({ type: 'application/json' }),
+  checkoutController.webhookCheckout,
+);
 
 // Parse nested query strings (e.g., price[lt]=200) into objects
 app.set('query parser', 'extended');
