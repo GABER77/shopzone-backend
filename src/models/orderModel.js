@@ -46,7 +46,7 @@ const orderSchema = new mongoose.Schema({
 
 orderSchema.pre(/^find/, function (next) {
   this.populate('user') // populates the user document
-    .populate('products.product', 'name'); // populates only the 'name' field of the product
+    .populate('products.product', 'name, images'); // populates only the 'name, iamges' field of the product
 
   next();
 });

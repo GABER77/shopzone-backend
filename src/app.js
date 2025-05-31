@@ -7,6 +7,7 @@ import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
 import checkoutRouter from './routes/checkoutRoutes.js';
+import ordersRouter from './routes/ordersRoutes.js';
 import checkoutController from './controllers/checkoutController.js';
 import globalErrorHandler from './utils/globalErrorHandler.js';
 
@@ -51,6 +52,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/checkout', checkoutRouter);
+app.use('/api/v1/orders', ordersRouter);
 
 app.use(globalErrorHandler);
 
