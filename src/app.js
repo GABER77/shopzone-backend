@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
 import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
@@ -27,6 +28,14 @@ app.use(
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Limit requests from same IP
+const limiter = rateLimit({
+  limit: 500,
+  windowMs: 60 * 60 * 1000, // Maximum of 100 request in 1 hour
+  message: 'Too many requests from this IP, please try again after an hour',
+});
+app.use('/api', limiter);
 
 // Stripe webhook route must come BEFORE bodyParser.json() or express.json()
 // because Stripe needs raw body to verify signature
