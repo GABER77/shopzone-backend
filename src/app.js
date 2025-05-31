@@ -3,6 +3,8 @@ import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
 
 import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
@@ -32,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 // Limit requests from same IP
 const limiter = rateLimit({
   limit: 500,
-  windowMs: 60 * 60 * 1000, // Maximum of 100 request in 1 hour
+  windowMs: 60 * 60 * 1000, // Maximum of 500 request in 1 hour
   message: 'Too many requests from this IP, please try again after an hour',
 });
 app.use('/api', limiter);
@@ -51,6 +53,14 @@ app.set('query parser', 'extended');
 // Body parser, Reading data from the body into req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Data sanitization against NoSQL query injection
+// Currently not compatible with Express 5 – waiting for an update to express-mongo-sanitize
+// >>>>> app.use(mongoSanitize());
+
+// Data sanitization against XSS(Cross-Site Scripting) attacks
+// Same as express-mongo-sanitize
+// >>>>> app.use(xss());
 
 // Reading data from the cookies (req.cookies)
 app.use(cookieParser());
