@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
+import compression from 'compression';
 
 import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
@@ -68,6 +69,9 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Reading data from the cookies (req.cookies)
 app.use(cookieParser());
+
+// Enable compression to speed up response delivery
+app.use(compression());
 
 // >>>>>>>>>>>>>>>>>>>>>>>>> ROUTES >>>>>>>>>>>>>>>>>>>>>>>>>
 
