@@ -15,6 +15,7 @@ import checkoutRouter from './routes/checkoutRoutes.js';
 import ordersRouter from './routes/ordersRoutes.js';
 import checkoutController from './controllers/checkoutController.js';
 import globalErrorHandler from './utils/globalErrorHandler.js';
+import CustomError from './utils/customError.js';
 
 const app = express();
 
@@ -80,6 +81,11 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/checkout', checkoutRouter);
 app.use('/api/v1/orders', ordersRouter);
+
+// Handle undefined routes
+app.all(/(.*)/, (req, res, next) => {
+  next(new CustomError(`Can't find ${req.originalUrl} on this server`, 404));
+});
 
 app.use(globalErrorHandler);
 
